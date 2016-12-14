@@ -92,13 +92,13 @@ public class SwipeRefreshLayout extends ViewGroup implements NestedScrollingPare
     // Default background for the progress spinner
     private static final int CIRCLE_BG_LIGHT = 0xFFFAFAFA;//圈圈的默认背景颜色
     // Default offset in dips from the top of the view to where the progress spinner should stop
-    private static final int DEFAULT_CIRCLE_TARGET = 64;//圈圈距离顶部位移64dp
+    private static final int DEFAULT_CIRCLE_TARGET = 64;//进度旋转器停止时距离顶部位移64dp
 
     private View mTarget; // the target of the gesture 手势的目标视图
     OnRefreshListener mListener;//下拉刷新监听器
     boolean mRefreshing = false;//是否正在刷新的标记
     private int mTouchSlop;
-    private float mTotalDragDistance = -1;
+    private float mTotalDragDistance = -1;//总共拖拽距离
 
     /**
      * Overscroll（边界回弹）效果-- android2.3新增的功能，也就是当滑动到边界的时候，如果再滑动，就会有一个边界就会有一个发光效果。
@@ -131,7 +131,7 @@ public class SwipeRefreshLayout extends ViewGroup implements NestedScrollingPare
             android.R.attr.enabled
     };
 
-    CircleImageView mCircleView;
+    CircleImageView mCircleView;//圆圈背景
     private int mCircleViewIndex = -1;
 
     protected int mFrom;
@@ -140,9 +140,9 @@ public class SwipeRefreshLayout extends ViewGroup implements NestedScrollingPare
 
     protected int mOriginalOffsetTop;
 
-    int mSpinnerOffsetEnd;
+    int mSpinnerOffsetEnd;//旋转器停止的时候的位移
 
-    MaterialProgressDrawable mProgress;//下拉图片
+    MaterialProgressDrawable mProgress;//进度旋转器
 
     private Animation mScaleAnimation;//缩放动画
 
@@ -357,17 +357,17 @@ public class SwipeRefreshLayout extends ViewGroup implements NestedScrollingPare
         final DisplayMetrics metrics = getResources().getDisplayMetrics();
         mCircleDiameter = (int) (CIRCLE_DIAMETER * metrics.density);//根据屏幕的像素密度来确定圆圈的直径
 
-        createProgressView();
+        createProgressView();//创建刷新视图
         ViewCompat.setChildrenDrawingOrderEnabled(this, true);
         // the absolute offset has to take into account that the circle starts at an offset
-        mSpinnerOffsetEnd = (int) (DEFAULT_CIRCLE_TARGET * metrics.density);
+        mSpinnerOffsetEnd = (int) (DEFAULT_CIRCLE_TARGET * metrics.density);//根据屏幕的像素密度来确定旋转器停止时的位移
         mTotalDragDistance = mSpinnerOffsetEnd;
         mNestedScrollingParentHelper = new NestedScrollingParentHelper(this);
 
         mNestedScrollingChildHelper = new NestedScrollingChildHelper(this);
-        setNestedScrollingEnabled(true);
+        setNestedScrollingEnabled(true);//启用嵌套滑动
 
-        mOriginalOffsetTop = mCurrentTargetOffsetTop = -mCircleDiameter;
+        mOriginalOffsetTop = mCurrentTargetOffsetTop = -mCircleDiameter;//初始位移为圆圈直径
         moveToStart(1.0f);
 
         final TypedArray a = context.obtainStyledAttributes(attrs, LAYOUT_ATTRS);
