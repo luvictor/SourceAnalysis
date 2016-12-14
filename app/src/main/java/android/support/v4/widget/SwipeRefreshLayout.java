@@ -58,9 +58,9 @@ public class SwipeRefreshLayout extends ViewGroup implements NestedScrollingPare
     public static final int DEFAULT = MaterialProgressDrawable.DEFAULT;
 
     @VisibleForTesting
-    static final int CIRCLE_DIAMETER = 40;
+    static final int CIRCLE_DIAMETER = 40;//圆圈直径
     @VisibleForTesting
-    static final int CIRCLE_DIAMETER_LARGE = 56;
+    static final int CIRCLE_DIAMETER_LARGE = 56;//圆圈直径（偏大）
 
     private static final String LOG_TAG = android.support.v4.widget.SwipeRefreshLayout.class.getSimpleName();
 
@@ -113,7 +113,7 @@ public class SwipeRefreshLayout extends ViewGroup implements NestedScrollingPare
     private final int[] mParentOffsetInWindow = new int[2];
     private boolean mNestedScrollInProgress;
 
-    private int mMediumAnimationDuration;
+    private int mMediumAnimationDuration;//动画执行时长-中等时长
     int mCurrentTargetOffsetTop;
 
     private float mInitialMotionY;//初始纵向位移
@@ -126,7 +126,7 @@ public class SwipeRefreshLayout extends ViewGroup implements NestedScrollingPare
     // Target is returning to its start offset because it was cancelled or a
     // refresh was triggered.
     private boolean mReturningToStart;//是否回到初始位移，由于取消或切换刷新状态
-    private final DecelerateInterpolator mDecelerateInterpolator;//插值器，减速
+    private final DecelerateInterpolator mDecelerateInterpolator;//减速插值器
     private static final int[] LAYOUT_ATTRS = new int[]{
             android.R.attr.enabled
     };
@@ -246,19 +246,20 @@ public class SwipeRefreshLayout extends ViewGroup implements NestedScrollingPare
      * near the top of the refreshing content. This position is a consistent
      * location, but can be adjusted in either direction based on whether or not
      * there is a toolbar or actionbar present.
+     * 刷新指示器起始和静止位置总是位于刷新内容的顶部附近。 此位置是一致的位置，但可以根据是否存在工具栏或操作栏在任一方向进行调整。
      * <p>
      * <strong>Note:</strong> Calling this will reset the position of the refresh indicator to
-     * <code>start</code>.
+     * <code>start</code>.调用此命令将重置刷新指示器的位置到开始
      * </p>
      *
      * @param scale Set to true if there is no view at a higher z-order than where the progress
      *              spinner is set to appear. Setting it to true will cause indicator to be scaled
      *              up rather than clipped.
      * @param start The offset in pixels from the top of this view at which the
-     *              progress spinner should appear.
+     *              progress spinner should appear.进度旋转器从顶部开始出现时的位移
      * @param end   The offset in pixels from the top of this view at which the
      *              progress spinner should come to rest after a successful swipe
-     *              gesture.
+     *              gesture. 刷新手势完成后，进度旋转器距离顶部的位移（单位px）
      */
     public void setProgressViewOffset(boolean scale, int start, int end) {
         mScale = scale;
@@ -327,6 +328,7 @@ public class SwipeRefreshLayout extends ViewGroup implements NestedScrollingPare
 
     /**
      * Simple constructor to use when creating a SwipeRefreshLayout from code.
+     * 使用代码创建SwipeRefreshLayout时，调用此构造函数
      *
      * @param context
      */
@@ -336,6 +338,7 @@ public class SwipeRefreshLayout extends ViewGroup implements NestedScrollingPare
 
     /**
      * Constructor that is called when inflating SwipeRefreshLayout from XML.
+     * 从xml文件中加载SwipeRefreshLayout时调用此构造函数
      *
      * @param context
      * @param attrs
@@ -346,13 +349,13 @@ public class SwipeRefreshLayout extends ViewGroup implements NestedScrollingPare
         mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
 
         mMediumAnimationDuration = getResources().getInteger(
-                android.R.integer.config_mediumAnimTime);
+                android.R.integer.config_mediumAnimTime);//动画执行时长-中等。400ms
 
         setWillNotDraw(false);
-        mDecelerateInterpolator = new DecelerateInterpolator(DECELERATE_INTERPOLATION_FACTOR);
+        mDecelerateInterpolator = new DecelerateInterpolator(DECELERATE_INTERPOLATION_FACTOR);//初始化减速插值器
 
         final DisplayMetrics metrics = getResources().getDisplayMetrics();
-        mCircleDiameter = (int) (CIRCLE_DIAMETER * metrics.density);
+        mCircleDiameter = (int) (CIRCLE_DIAMETER * metrics.density);//根据屏幕的像素密度来确定圆圈的直径
 
         createProgressView();
         ViewCompat.setChildrenDrawingOrderEnabled(this, true);
