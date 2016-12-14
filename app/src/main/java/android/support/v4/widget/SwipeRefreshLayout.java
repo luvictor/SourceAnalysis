@@ -1,4 +1,4 @@
-package com.victor.swiperefresh;
+package android.support.v4.widget;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -164,7 +164,7 @@ public class SwipeRefreshLayout extends ViewGroup implements NestedScrollingPare
     private OnChildScrollUpCallback mChildScrollUpCallback;//自布局想上滚动的回调
 
     /**
-     * 刷新操作的动画回调
+     * 刷新操作的动画监听事件
      */
     private Animation.AnimationListener mRefreshListener = new Animation.AnimationListener() {
         @Override
@@ -212,10 +212,15 @@ public class SwipeRefreshLayout extends ViewGroup implements NestedScrollingPare
         mCurrentTargetOffsetTop = mCircleView.getTop();
     }
 
+    /**
+     * 是否启用
+     *
+     * @param enabled
+     */
     @Override
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
-        if (!enabled) {
+        if (!enabled) {//禁用状态，重置刷新view的状态
             reset();
         }
     }
@@ -226,9 +231,14 @@ public class SwipeRefreshLayout extends ViewGroup implements NestedScrollingPare
         reset();
     }
 
+    /**
+     * 设置刷新view的透明度
+     *
+     * @param targetAlpha
+     */
     private void setColorViewAlpha(int targetAlpha) {
-        mCircleView.getBackground().setAlpha(targetAlpha);
-        mProgress.setAlpha(targetAlpha);
+        mCircleView.getBackground().setAlpha(targetAlpha);//设置圆形背景的透明度
+        mProgress.setAlpha(targetAlpha);//设置圆形进度条的透明度
     }
 
     /**
