@@ -1,21 +1,5 @@
 package com.victor.swiperefresh;
 
-/*
- * Copyright (C) 2013 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.support.annotation.ColorInt;
@@ -62,6 +46,10 @@ import android.widget.AbsListView;
  * refresh of the content wherever this gesture is used.
  * </p>
  */
+
+/**
+ * 只能支持一个直接的子布局
+ */
 public class SwipeRefreshLayout extends ViewGroup implements NestedScrollingParent,
         NestedScrollingChild {
     // Maps to ProgressBar.Large style
@@ -76,8 +64,14 @@ public class SwipeRefreshLayout extends ViewGroup implements NestedScrollingPare
 
     private static final String LOG_TAG = android.support.v4.widget.SwipeRefreshLayout.class.getSimpleName();
 
-    private static final int MAX_ALPHA = 255;
-    private static final int STARTING_PROGRESS_ALPHA = (int) (.3f * MAX_ALPHA);
+    /**
+     * Android的透明度
+     * 1、0-1.0表示， 0-完全透明，1-完全不透明
+     * 2、0-255表示，0-完全透明，255-完全不透明
+     * 3、16进制00-FF表示，00-完全透明，FF-完全不透明
+     */
+    private static final int MAX_ALPHA = 255;//最大不透明度
+    private static final int STARTING_PROGRESS_ALPHA = (int) (.3f * MAX_ALPHA);// 开始执行刷新动画的时候不透明度为30%
 
     private static final float DECELERATE_INTERPOLATION_FACTOR = 2f;
     private static final int INVALID_POINTER = -1;
@@ -85,27 +79,30 @@ public class SwipeRefreshLayout extends ViewGroup implements NestedScrollingPare
 
     // Max amount of circle that can be filled by progress during swipe gesture,
     // where 1.0 is a full circle
-    private static final float MAX_PROGRESS_ANGLE = .8f;
+    private static final float MAX_PROGRESS_ANGLE = .8f;//进度圈圈最长是80%周长
 
-    private static final int SCALE_DOWN_DURATION = 150;
+    private static final int SCALE_DOWN_DURATION = 150;//缩小的动画时长是150ms
 
-    private static final int ALPHA_ANIMATION_DURATION = 300;
+    private static final int ALPHA_ANIMATION_DURATION = 300;//透明度动画时长300ms
 
     private static final int ANIMATE_TO_TRIGGER_DURATION = 200;
 
     private static final int ANIMATE_TO_START_DURATION = 200;
 
     // Default background for the progress spinner
-    private static final int CIRCLE_BG_LIGHT = 0xFFFAFAFA;
+    private static final int CIRCLE_BG_LIGHT = 0xFFFAFAFA;//圈圈的默认背景颜色
     // Default offset in dips from the top of the view to where the progress spinner should stop
-    private static final int DEFAULT_CIRCLE_TARGET = 64;
+    private static final int DEFAULT_CIRCLE_TARGET = 64;//圈圈距离顶部位移64dp
 
-    private View mTarget; // the target of the gesture
-    android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener mListener;
-    boolean mRefreshing = false;
+    private View mTarget; // the target of the gesture 手势的目标视图
+    OnRefreshListener mListener;//下拉刷新监听器
+    boolean mRefreshing = false;//是否正在刷新的标记
     private int mTouchSlop;
     private float mTotalDragDistance = -1;
 
+    /**
+     * Overscroll（边界回弹）效果-- android2.3新增的功能，也就是当滑动到边界的时候，如果再滑动，就会有一个边界就会有一个发光效果。
+     */
     // If nested scrolling is enabled, the total amount that needed to be
     // consumed by this as the nested scrolling parent is used in place of the
     // overscroll determined by MOVE events in the onTouch handler
@@ -119,17 +116,17 @@ public class SwipeRefreshLayout extends ViewGroup implements NestedScrollingPare
     private int mMediumAnimationDuration;
     int mCurrentTargetOffsetTop;
 
-    private float mInitialMotionY;
-    private float mInitialDownY;
-    private boolean mIsBeingDragged;
+    private float mInitialMotionY;//初始纵向位移
+    private float mInitialDownY;//初始触摸y轴值
+    private boolean mIsBeingDragged;//是否正在拖拽
     private int mActivePointerId = INVALID_POINTER;
     // Whether this item is scaled up rather than clipped
-    boolean mScale;
+    boolean mScale;//是否是放大，而不是缩小
 
     // Target is returning to its start offset because it was cancelled or a
     // refresh was triggered.
-    private boolean mReturningToStart;
-    private final DecelerateInterpolator mDecelerateInterpolator;
+    private boolean mReturningToStart;//是否回到初始位移，由于取消或切换刷新状态
+    private final DecelerateInterpolator mDecelerateInterpolator;//插值器，减速
     private static final int[] LAYOUT_ATTRS = new int[]{
             android.R.attr.enabled
     };
@@ -145,27 +142,30 @@ public class SwipeRefreshLayout extends ViewGroup implements NestedScrollingPare
 
     int mSpinnerOffsetEnd;
 
-    MaterialProgressDrawable mProgress;
+    MaterialProgressDrawable mProgress;//下拉图片
 
-    private Animation mScaleAnimation;
+    private Animation mScaleAnimation;//缩放动画
 
-    private Animation mScaleDownAnimation;
+    private Animation mScaleDownAnimation;//缩小动画
 
-    private Animation mAlphaStartAnimation;
+    private Animation mAlphaStartAnimation;//透明度开始的动画
 
-    private Animation mAlphaMaxAnimation;
+    private Animation mAlphaMaxAnimation;//透明度达到最大值的动画
 
     private Animation mScaleDownToStartAnimation;
 
-    boolean mNotify;
+    boolean mNotify;//是否通知
 
-    private int mCircleDiameter;
+    private int mCircleDiameter;//圆圈的直径
 
     // Whether the client has set a custom starting position;
-    boolean mUsingCustomStart;
+    boolean mUsingCustomStart;//是否使用自定义的起始位置
 
-    private android.support.v4.widget.SwipeRefreshLayout.OnChildScrollUpCallback mChildScrollUpCallback;
+    private OnChildScrollUpCallback mChildScrollUpCallback;//自布局想上滚动的回调
 
+    /**
+     * 刷新操作的动画回调
+     */
     private Animation.AnimationListener mRefreshListener = new Animation.AnimationListener() {
         @Override
         public void onAnimationStart(Animation animation) {
@@ -177,29 +177,33 @@ public class SwipeRefreshLayout extends ViewGroup implements NestedScrollingPare
 
         @Override
         public void onAnimationEnd(Animation animation) {
-            if (mRefreshing) {
+            if (mRefreshing) {//如果正在刷新
                 // Make sure the progress view is fully visible
-                mProgress.setAlpha(MAX_ALPHA);
-                mProgress.start();
-                if (mNotify) {
-                    if (mListener != null) {
+                mProgress.setAlpha(MAX_ALPHA);//刷新图标不透明度为255，完全可见
+                mProgress.start();//图片开始执行动画
+                if (mNotify) {//需要通知监听器
+                    if (mListener != null) {//调用刷新的回调方法
                         mListener.onRefresh();
                     }
                 }
-                mCurrentTargetOffsetTop = mCircleView.getTop();
-            } else {
+                mCurrentTargetOffsetTop = mCircleView.getTop();//当前目标的顶部位移
+            } else {//动画结束的时候，刷新已完成，则重置回刷新前的状态
                 reset();
             }
         }
     };
 
+    /**
+     * 重置会刷新前的状态
+     */
     void reset() {
-        mCircleView.clearAnimation();
-        mProgress.stop();
-        mCircleView.setVisibility(View.GONE);
-        setColorViewAlpha(MAX_ALPHA);
+        mCircleView.clearAnimation();//圆形图片结束动画
+        mProgress.stop();//圆形进度条停止动画
+        mCircleView.setVisibility(View.GONE);//隐藏圆形背景
+        setColorViewAlpha(MAX_ALPHA);//设置刷新view的不透明度为最大的透明度
         // Return the circle to its start position
-        if (mScale) {
+        if (mScale) {//如果之前是放大动画
+            // 设置动画进度为0，意思是，之前放大，现在要缩小，目的是视图隐藏
             setAnimationProgress(0 /* animation complete and view is hidden */);
         } else {
             setTargetOffsetTopAndBottom(mOriginalOffsetTop - mCurrentTargetOffsetTop,
@@ -1184,6 +1188,7 @@ public class SwipeRefreshLayout extends ViewGroup implements NestedScrollingPare
         ViewCompat.offsetTopAndBottom(mCircleView, offset);
         mCurrentTargetOffsetTop = mCircleView.getTop();
         if (requiresUpdate && android.os.Build.VERSION.SDK_INT < 11) {
+            //界面刷新，重新绘制
             invalidate();
         }
     }
